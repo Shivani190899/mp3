@@ -1,4 +1,3 @@
-type,source,url
-chat_log,Claude shared conversation,https://claude.ai/share/6108e53f-a4cf-499a-b763-6a0a799c2028
-reference,Medium: Todo REST API with Go and MongoDB,https://medium.com/@schalla024/building-a-todo-list-rest-api-with-crud-operations-in-go-and-mongodb-using-gorilla-mux-dfcdf8d81c77
-reference,CodeSignal: Todo backend with Node.js and Express,https://codesignal.com/learn/courses/building-a-backend-for-todo-list-with-nodejs-and-express
+chat_log: https://claude.ai/share/6108e53f-a4cf-499a-b763-6a0a799c2028
+Medium: Todo REST API with Go and MongoDB,https://medium.com/@schalla024/building-a-todo-list-rest-api-with-crud-operations-in-go-and-mongodb-using-gorilla-mux-dfcdf8d81c77
+CodeSignal: Todo backend with Node.js and Express,https://codesignal.com/learn/courses/building-a-backend-for-todo-list-with-nodejs-and-express
