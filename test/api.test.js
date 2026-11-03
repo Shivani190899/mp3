@@ -51,6 +51,10 @@ async function request(method, body, expectedStatus = 200, route = '/users') {
         ...(body === undefined ? {} : { body: JSON.stringify(body) })
     });
     assert.equal(response.status, expectedStatus, await response.clone().text());
+    if (expectedStatus === 204) {
+        assert.equal(await response.text(), '');
+        return;
+    }
     const result = await response.json();
     assert.equal(typeof result.message, 'string');
     assert.ok(Object.hasOwn(result, 'data'));
@@ -425,8 +429,7 @@ test('DELETE task removes its pending reference and subsequent requests return 4
     const user = await request('POST', valid, 201);
     const task = await createTask({ assignedUser: user._id });
     const keep = await createTask({ assignedUser: user._id });
-    const deleted = await request('DELETE', undefined, 200, `/tasks/${task._id}`);
-    assert.equal(deleted._id, task._id);
+    await request('DELETE', undefined, 204, `/tasks/${task._id}`);
     assert.deepEqual((await readUser(user._id)).pendingTasks, [keep._id]);
     await request('GET', undefined, 404, `/tasks/${task._id}`);
     await request('DELETE', undefined, 404, `/tasks/${task._id}`);
@@ -438,8 +441,7 @@ test('DELETE user unassigns pending and completed tasks while preserving other o
     const pending = await createTask({ assignedUser: a._id });
     const done = await createTask({ assignedUser: a._id, completed: true });
     const unrelated = await createTask({ assignedUser: b._id });
-    const deleted = await request('DELETE', undefined, 200, `/users/${a._id}`);
-    assert.equal(deleted._id, a._id);
+    await request('DELETE', undefined, 204, `/users/${a._id}`);
     for (const task of [pending, done]) {
         const remaining = await readTask(task._id);
         assert.equal(remaining.assignedUser, '');
@@ -455,9 +457,9 @@ test('DELETE handles unassigned or completed tasks and users without tasks', asy
     const user = await request('POST', valid, 201);
     const task = await createTask();
     const done = await createTask({ assignedUser: user._id, completed: true });
-    await request('DELETE', undefined, 200, `/tasks/${task._id}`);
-    await request('DELETE', undefined, 200, `/tasks/${done._id}`);
-    await request('DELETE', undefined, 200, `/users/${user._id}`);
+    await request('DELETE', undefined, 204, `/tasks/${task._id}`);
+    await request('DELETE', undefined, 204, `/tasks/${done._id}`);
+    await request('DELETE', undefined, 204, `/users/${user._id}`);
     assert.equal(await User.countDocuments(), 0);
     assert.equal(await Task.countDocuments(), 0);
 });
@@ -475,7 +477,7 @@ for (const completed of [false, true]) {
         const user = await request('POST', valid, 201);
         const [creation] = await Promise.all([
             fetch(base + '/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...taskBody, assignedUser: user._id, completed }) }),
-            request('DELETE', undefined, 200, `/users/${user._id}`)
+            request('DELETE', undefined, 204, `/users/${user._id}`)
         ]);
         assert.ok([201, 404].includes(creation.status), await creation.clone().text());
         if (creation.status === 201) {

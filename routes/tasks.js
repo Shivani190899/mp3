@@ -95,7 +95,7 @@ module.exports = function (router) {
         })
         .delete(async function (req, res) {
             if (!/^[a-f\d]{24}$/i.test(req.params.id)) rejectRequest(404, 'Task not found.');
-            var deleted = await mongoose.connection.transaction(async function (session) {
+            await mongoose.connection.transaction(async function (session) {
                 var task = await Task.findById(req.params.id).session(session);
                 if (!task) rejectRequest(404, 'Task not found.');
                 // The deletion and reference cleanup either both commit or both roll back.
@@ -104,9 +104,8 @@ module.exports = function (router) {
                     { pendingTasks: task.id }, { $pull: { pendingTasks: task.id } },
                     { session: session }
                 );
-                return task.toObject();
             });
-            res.status(200).json({ message: 'Task deleted.', data: deleted });
+            res.status(204).end();
         });
     return router;
 };

@@ -97,7 +97,7 @@ module.exports = function (router) {
         })
         .delete(async function (req, res) {
             if (!/^[a-f\d]{24}$/i.test(req.params.id)) rejectRequest(404, 'User not found.');
-            var deleted = await mongoose.connection.transaction(async function (session) {
+            await mongoose.connection.transaction(async function (session) {
                 var user = await User.findById(req.params.id).session(session);
                 if (!user) rejectRequest(404, 'User not found.');
                 // The deletion and reference cleanup either both commit or both roll back.
@@ -106,9 +106,8 @@ module.exports = function (router) {
                     { assignedUser: user.id }, { $set: { assignedUser: '', assignedUserName: 'unassigned' } },
                     { session: session }
                 );
-                return user.toObject();
             });
-            res.status(200).json({ message: 'User deleted.', data: deleted });
+            res.status(204).end();
         });
     return router;
 };
